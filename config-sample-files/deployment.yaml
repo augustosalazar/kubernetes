@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-deployment
+  namespace: demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: echo
+  template:
+    metadata:
+      labels:
+        app: echo
+    spec:
+      containers:
+      - name: echo
+        image: hashicorp/http-echo:0.2.3
+        args:
+          - "-text=$(APP_MESSAGE)"           # use our ConfigMap
+        env:
+          - name: APP_MESSAGE
+            valueFrom:
+              configMapKeyRef:
+                name: app-config
+                key: APP_MESSAGE
+          - name: DB_USER                    # use our Secret
+            valueFrom:
+              secretKeyRef:
+                name: db-credentials
+                key: username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-credentials
+                key: password
+        ports:
+          - containerPort: 5678
+        volumeMounts:
+          - name: log-volume
+            mountPath: /logs
+      volumes:
+      - name: log-volume                   # mount our PVC
+        persistentVolumeClaim:
+          claimName: app-pvc
