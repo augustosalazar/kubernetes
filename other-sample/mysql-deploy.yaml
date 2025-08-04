@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment    # para producción real usarías StatefulSet
+metadata:
+  name: mysql
+  namespace: clientes-app
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: clientes-db:latest            # el tag que construiste localmente
+        imagePullPolicy: Never               # fuerza a usar la imagen local
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: root-password
+        - name: MYSQL_DATABASE
+          value: clientesdb
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: datos
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: datos
+        persistentVolumeClaim:
+          claimName: mysql-pvc

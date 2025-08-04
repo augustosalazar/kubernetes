@@ -1,0 +1,42 @@
+# web-deploy.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: clientes-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: web
+        image: clientes-web:latest       # imagen construida localmente en Minikube
+        imagePullPolicy: Never           # fuerza a usar la imagen local
+        env:
+        - name: DB_HOST
+          value: mysql.clientes-app.svc.cluster.local
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_NAME
+          value: clientesdb
+        - name: DB_USER
+          value: root
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: root-password
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /clientes
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
