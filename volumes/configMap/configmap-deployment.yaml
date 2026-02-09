@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configmap-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configmap-demo
+  template:
+    metadata:
+      labels:
+        app: configmap-demo
+    spec:
+      volumes:
+      - name: config
+        configMap:
+          name: app-config
+
+      containers:
+      - name: app
+        image: busybox
+        command: ["sh", "-c", "cat /config/APP_MODE && sleep 3600"]
+        volumeMounts:
+        - name: config
+          mountPath: /config

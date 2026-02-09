@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emptydir-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: emptydir-demo
+  template:
+    metadata:
+      labels:
+        app: emptydir-demo
+    spec:
+      volumes:
+      - name: data
+        emptyDir: {}
+
+      containers:
+      - name: app
+        image: busybox
+        command: ["sh", "-c", "echo hello > /data/file.txt && sleep 3600"]
+        volumeMounts:
+        - name: data
+          mountPath: /data
