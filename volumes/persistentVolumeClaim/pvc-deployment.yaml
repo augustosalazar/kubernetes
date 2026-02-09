@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pvc-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pvc-demo
+  template:
+    metadata:
+      labels:
+        app: pvc-demo
+    spec:
+      volumes:
+      - name: persistent-data
+        persistentVolumeClaim:
+          claimName: pvc-demo
+
+      containers:
+      - name: app
+        image: busybox
+        command: ["sh", "-c", "echo persistent > /data/file.txt && sleep 3600"]
+        volumeMounts:
+        - name: persistent-data
+          mountPath: /data
