@@ -1,7 +1,12 @@
 
-# Secret - sensitive data as files
+# Secret – Sensitive Data as Files
 
-Create the secret
+This example shows how to use a **Secret** to provide sensitive data to a container using a volume.
+
+
+---
+
+## Create the Secret
 
 ```bash
 kubectl create secret generic db-secret --from-literal=password=supersecret
@@ -13,13 +18,19 @@ Verify
 kubectl get secret db-secret
 ```
 
-Apply deployment
+## Apply the deployment
 
 ```bash
 kubectl apply -f secret-deployment.yaml
 ```
 
-Test
+Confirm that the Pod is running
+
+```bash
+kubectl get pods
+```
+
+## Verify the Secret inside the container
 
 ```bash
 kubectl exec -it deploy/secret-demo -- sh

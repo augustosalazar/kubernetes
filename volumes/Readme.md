@@ -1,250 +1,86 @@
-# Kubernetes Volumes – Hands‑on Examples (Deployments)
+# Kubernetes Volumes – Conceptual Overview
 
-This repository contains **hands‑on Kubernetes volume examples**, each implemented using a **Deployment** (no standalone Pods), suitable for learning and teaching.
+This repository contains **examples of the main Kubernetes volume types**, each implemented using a **Deployment** and documented in its own folder.
 
-The goal is to understand:
-- how volumes work in Kubernetes
-- how they relate to Pods and Deployments
-- how data behaves when Pods restart or are recreated
+This top-level README provides **conceptual introductions only**.  
+Detailed commands, experiments, and observations are documented inside each folder.
 
-> **Important mental model**
+---
+
+## How to read this repository
+
+- Each folder represents **one volume type**
+- Each volume is used **inside a Deployment**
+
+> **Key mental model**
 >
-> **Deployments create Pods. Pods own volumes.**  
-> Each replica gets its *own* volume unless a shared persistent volume is used.
+> **Deployments manage Pods. Pods own volumes.**  
+> Volume behavior depends on the *volume type* and the *Pod lifecycle*.
 
 ---
 
-## Prerequisites
+## emptyDir
 
-
-Verify cluster:
-
-```bash
-kubectl get nodes
-```
-
----
-
-## Repository Structure
-
-```text
-.
-├── emptyDir/
-│   ├── deployment.yaml
-│   └── README.md
-├── configMap/
-│   ├── deployment.yaml
-│   └── README.md
-├── secret/
-│   ├── deployment.yaml
-│   └── README.md
-├── pvc/
-│   ├── pvc.yaml
-│   ├── deployment.yaml
-│   └── README.md
-└── README.md   ← you are here
-```
-
-Each folder is **independent** and can be applied and tested on its own.
-
----
-
-## 1️⃣ emptyDir
-
-### What it is
-`emptyDir` is **temporary storage** created when a Pod starts and deleted when the Pod stops.
+**`emptyDir`** is temporary storage created when a Pod starts.
 
 - Scoped to a **single Pod**
-- Shared by containers in the same Pod
-- Deleted when the Pod is deleted
+- Shared by all containers in that Pod
+- Deleted when the Pod is deleted or recreated
 
-### Apply
-
-```bash
-kubectl apply -f emptyDir/deployment.yaml
-```
-
-### Test
-
-```bash
-kubectl exec -it deploy/emptydir-demo -- sh
-cat /data/file.txt
-```
-
-### Restart the Pod
-
-```bash
-kubectl delete pod -l app=emptydir-demo
-```
-
-Run the test again — the file is recreated, not persisted.
-
-### Key takeaway
-
-> **`emptyDir` lives and dies with the Pod.**
+Think of it as:
+> “A temporary directory that exists only for the life of the Pod.”
 
 ---
 
-## 2️⃣ ConfigMap (as a volume)
+## ConfigMap (as a volume)
 
-### What it is
-A **ConfigMap** stores non‑secret configuration outside the container image.
+A **ConfigMap** stores non-sensitive configuration outside the container image.
 
-- Managed by Kubernetes
-- Mounted as files or injected as env vars
-- Does not require rebuilding images
+- Mounted as files inside the container
+- Allows changing configuration without rebuilding images
 
-### Create ConfigMap
-
-```bash
-kubectl create configmap app-config --from-literal=APP_MODE=production
-```
-
-### Apply Deployment
-
-```bash
-kubectl apply -f configMap/deployment.yaml
-```
-
-### Test
-
-```bash
-kubectl exec -it deploy/configmap-demo -- sh
-cat /config/APP_MODE
-```
-
-### Update configuration
-
-```bash
-kubectl create configmap app-config   --from-literal=APP_MODE=debug   -o yaml --dry-run=client | kubectl apply -f -
-```
-
-Restart Pods:
-
-```bash
-kubectl rollout restart deployment configmap-demo
-```
-
-### Key takeaway
-
-> **Configuration is external to the image and environment‑specific.**
+Think of it as:
+> “Configuration injected into the container at runtime.”
 
 ---
 
-## 3️⃣ Secret (as a volume)
+## Secret (as a volume)
 
-### What it is
-A **Secret** stores sensitive data such as passwords or tokens.
+A **Secret** is similar to a ConfigMap but intended for sensitive data.
 
-- Similar to ConfigMaps
-- Base64‑encoded (not encrypted by default)
-- Mounted as read‑only files
+- Mounted as read-only files
+- Intended for credentials and keys
 
-### Create Secret
-
-```bash
-kubectl create secret generic db-secret   --from-literal=password=supersecret
-```
-
-### Apply Deployment
-
-```bash
-kubectl apply -f secret/deployment.yaml
-```
-
-### Test
-
-```bash
-kubectl exec -it deploy/secret-demo -- sh
-cat /secrets/password
-```
-
-### Inspect the Secret
-
-```bash
-kubectl get secret db-secret -o yaml
-```
-
-### Key takeaway
-
-> **Secrets should never be baked into images or committed to Git.**
+Think of it as:
+> “Sensitive configuration kept out of images and source code.”
 
 ---
 
-## 4️⃣ PersistentVolumeClaim (PVC)
+## PersistentVolumeClaim (PVC)
 
-### What it is
-A **PersistentVolumeClaim** provides **real, durable storage**.
+A **PersistentVolumeClaim** provides durable, long-lived storage.
 
 - Data survives Pod deletion
-- Backed by disks (cloud or local)
-- Correct solution for databases and stateful apps
+- Storage is independent from Pods
 
-### Create PVC
-
-```bash
-kubectl apply -f pvc/pvc.yaml
-kubectl get pvc
-```
-
-Ensure the PVC is **Bound**.
-
-### Apply Deployment
-
-```bash
-kubectl apply -f pvc/deployment.yaml
-```
-
-### Test persistence
-
-```bash
-kubectl exec -it deploy/pvc-demo -- sh
-cat /data/file.txt
-```
-
-Delete the Pod:
-
-```bash
-kubectl delete pod -l app=pvc-demo
-```
-
-Test again — data is still there.
-
-### Key takeaway
-
-> **PVCs decouple storage from Pods.**
+Think of it as:
+> “A disk requested from the cluster and attached to Pods.”
 
 ---
 
-## Comparison Summary
+## Why everything uses Deployments
 
-| Volume type | Survives Pod delete | Scope | Typical use |
-|-----------|--------------------|------|-------------|
-| emptyDir | ❌ No | Pod | Cache, temp files |
-| ConfigMap | ✅ Yes | Cluster | App configuration |
-| Secret | ✅ Yes | Cluster | Credentials |
-| PVC | ✅ Yes | Cluster | Databases, state |
+Pods are **ephemeral** and **replaceable**.  
+Deployments manage that replacement.
+
+Volumes must work correctly even when Pods disappear and reappear.
 
 ---
 
 ## Final takeaway
 
-> **We don’t create Pods directly. We create Deployments.  
-> Deployments create Pods. Pods own volumes.**
+> **Volume type defines data lifetime.  
+> Pod lifecycle defines when data exists.  
+> Deployments define how Pods are replaced.**
 
-This separation is the foundation of Kubernetes storage.
-
----
-
-## Cleanup (optional)
-
-```bash
-kubectl delete deployment --all
-kubectl delete configmap app-config
-kubectl delete secret db-secret
-kubectl delete pvc pvc-demo
-```
-
----
-
-Happy experimenting 🚀
+Refer to each folder’s README for hands-on steps.

@@ -1,59 +1,96 @@
+# emptyDir – Shared Volume Between Containers
 
+This example demonstrates how **two containers in the same Pod** can share data using an **`emptyDir` volume**.
 
-# Example of emptyVolume usage
-   
-What it demonstrates
+The Deployment runs:
+- a **writer** container that creates a file
+- a **reader** container that reads that file
 
-- Volume lives as long as the Pod
+Both containers mount the **same volume** at `/data`.
 
-- Each replica gets its own storage
+---
 
-- Containers in the same Pod can share it
+## Starting the Deployment
 
+Create the Deployment using the provided manifest:
 
 ```bash
 kubectl apply -f emptydir-deployment.yaml
 ```
 
-Test it:
-
+Verify that the Pod is running:
 
 ```bash
 kubectl get pods
 ```
-Now we go inside the pod (this command says Pick one Pod created by the Deployment named emptydir-demo. Then execute the command sh to get a shell inside the container):
+
+You should see one Pod created by the Deployment.
+
+---
+
+## Observing shared storage between containers
+
+The `emptyDir` volume is created once when the Pod starts and is shared by all containers inside that Pod.
+
+---
+
+## Entering the reader container
+
+To inspect what the writer container has produced, open a shell inside the **reader** container:
 
 ```bash
-kubectl exec -it deploy/emptydir-demo -- sh
+kubectl exec -it deploy/emptydir-demo -c reader -- sh
 ```
 
-```bash
+This connects you directly to the reader container.
+
+---
+
+## Inspecting the shared volume
+
+Inside the container, list the contents of the mounted directory:
+
+```sh
+ls /data
+```
+
+You should see a file created by the writer container:
+
+```text
+file.txt
+```
+
+Display its contents:
+
+```sh
 cat /data/file.txt
 ```
 
-Now we write something to the file:
+The output confirms that:
+- the file was written by a **different container**
+- both containers are accessing the **same filesystem**
 
-```bash
-echo "Hello, World!" > /data/file.txt
-```
+---
 
-Exit the container
+## What this demonstrates
 
-```bash
-exit
-```
+- `emptyDir` is **Pod-scoped**
+- All containers in the same Pod see the **same data**
+- Containers can cooperate without networking or services
+- Data sharing happens through the filesystem
 
+---
 
-Delete the pod and check the content of the file again (this command may take a while to execute because it needs to create a new Pod):
+## Lifecycle note
 
-```bash
-kubectl delete pod -l app=emptydir-demo
-```
+If the Pod is deleted or recreated:
+- the `emptyDir` volume is destroyed
+- all data inside it is lost
 
-```bash
-kubectl exec -it deploy/emptydir-demo -- sh
-```
+This makes `emptyDir` suitable for **temporary data only**.
 
-```bash
-cat /data/file.txt
-```
+---
+
+## Key takeaway
+
+> **`emptyDir` enables fast, temporary data sharing between containers in the same Pod.**

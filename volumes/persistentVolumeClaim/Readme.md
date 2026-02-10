@@ -1,6 +1,13 @@
-# persistentVolumeClaim — real persistence
+# PersistentVolumeClaim – Real Persistence
 
-Create PVC
+This example demonstrates how a **PersistentVolumeClaim (PVC)** provides storage that **survives Pod deletion**.
+
+---
+
+## Create the PersistentVolumeClaim
+
+Create the PVC:
+
 
 ```bash
 kubectl apply -f pvc.yaml
@@ -12,13 +19,19 @@ Verify binding (expect bond):
 kubectl get pvc
 ```
 
-Apply Deployment
+## Deploy the application
 
 ```bash
 kubectl apply -f pvc-deployment.yaml
 ```
 
-Write data
+Confirm that the Pod is running
+
+```bash
+kubectl get pods
+```
+
+## Write data to the volume
 
 ```bash
 kubectl exec -it deploy/pvc-demo -- sh
@@ -34,7 +47,7 @@ cat /data/file.txt
 exit
 ```
 
-Delete Pod
+## Delete Pod and verify data persistence
 
 ```bash
 kubectl delete pod -l app=pvc-demo

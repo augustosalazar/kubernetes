@@ -1,6 +1,11 @@
 
-# Example of ConfigMap usage
+# ConfigMap – Simple Example
 
+This example shows how to use a **ConfigMap** to provide configuration data to a container using a volume.
+
+---
+
+## Create the ConfigMap
 
 Create a ConfigMap named app-config with one key–value pair APP_MODE=production.
 
@@ -8,19 +13,19 @@ Create a ConfigMap named app-config with one key–value pair APP_MODE=productio
 kubectl create configmap app-config --from-literal=APP_MODE=production
 ```
 
-Verify that the ConfigMap was created successfully by running the command below:
+Verify that the ConfigMap was created successfully
 
 ```bash
 kubectl get configmaps
 ```
 
-Apply the deployment
+## Apply the deployment
 
 ```bash
 kubectl apply -f configmap-deployment.yaml
 ```
 
-Test
+## Verify that the ConfigMap was created successfully
 
 ```bash
 kubectl exec -it deploy/configmap-demo -- sh
