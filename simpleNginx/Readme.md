@@ -12,18 +12,9 @@ Deployment, Pods, Service — antes de complicar nada.
 kubectl apply -f my-app-deployment.yaml
 ```
 
-```bash
-kubectl apply -f my-app-deployment.yaml
-```
-
 Comprobar el estado del Deployment:
 
 ```powershell
-kubectl get deployments
-kubectl get pods -o wide
-```
-
-```bash
 kubectl get deployments
 kubectl get pods -o wide
 ```
@@ -38,18 +29,9 @@ kubectl apply -f my-app-service.yaml
 kubectl get services
 ```
 
-```bash
-kubectl apply -f my-app-service.yaml
-kubectl get services
-```
-
 ## Acceder a la aplicación
 
 ```powershell
-minikube service my-app-nginx-service --url
-```
-
-```bash
 minikube service my-app-nginx-service --url
 ```
 
@@ -94,10 +76,6 @@ Dejen `kubectl get pods -w` corriendo en una ventana y, en otra:
 kubectl delete pod -l app=my-app
 ```
 
-```bash
-kubectl delete pod -l app=my-app
-```
-
 El Deployment crea Pods nuevos enseguida: prometió mantener dos réplicas
 corriendo. Comparen esto con lo que hace un `Job` en la carpeta [`jobs/`](../jobs/).
 
@@ -108,10 +86,6 @@ kubectl delete -f my-app-service.yaml
 kubectl delete -f my-app-deployment.yaml
 ```
 
-```bash
-kubectl delete -f my-app-service.yaml
-kubectl delete -f my-app-deployment.yaml
-```
 
 No es obligatorio borrarlo antes de pasar a `scalingScenario/` —aquel usa otros
 nombres, otra etiqueta y otro NodePort—, pero deja el clúster más limpio.
