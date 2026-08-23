@@ -4,6 +4,11 @@ metadata:
   name: db
 spec:
   replicas: 1
+  # Recreate, no RollingUpdate: el PVC es ReadWriteOnce y solo lo puede montar
+  # un Pod a la vez. Con la estrategia por defecto, al actualizar el Deployment
+  # el Pod nuevo se queda esperando el volumen que todavia tiene el viejo.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: db
@@ -13,20 +18,47 @@ spec:
         app: db
     spec:
       containers:
-      - name: db
-        image: postgres:15
-        ports:
-        - containerPort: 5432
-        env:
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: password
-        volumeMounts:
-        - name: db-data
-          mountPath: /var/lib/postgresql/data
+        - name: db
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
+            # PGDATA en un SUBDIRECTORIO del volumen, no en su raiz.
+            #
+            # Sin esto, initdb encuentra la raiz del volumen ya ocupada (muchos
+            # provisionadores dejan ahi un lost+found) y el contenedor muere con
+            #   initdb: error: directory "/var/lib/postgresql/data" exists but is
+            #   not empty
+            # dejando el Pod en CrashLoopBackOff. Es el fallo mas comun al montar
+            # un PVC en Postgres.
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: db-data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
       volumes:
-      - name: db-data
-        persistentVolumeClaim:
-          claimName: db-pvc
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: db-pvc

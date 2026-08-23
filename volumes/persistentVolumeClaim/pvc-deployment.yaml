@@ -13,14 +13,38 @@ spec:
         app: pvc-demo
     spec:
       volumes:
-      - name: persistent-data
-        persistentVolumeClaim:
-          claimName: pvc-demo
+        - name: persistent-data
+          persistentVolumeClaim:
+            claimName: pvc-demo
 
       containers:
-      - name: app
-        image: busybox
-        command: ["sh", "-c", "echo persistent > /data/file.txt && sleep 3600"]
-        volumeMounts:
-        - name: persistent-data
-          mountPath: /data
+        - name: app
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              # ANADE una linea cada vez que arranca el contenedor; no
+              # sobrescribe el archivo.
+              #
+              # La version anterior hacia `echo persistent > /data/file.txt`, es
+              # decir, reescribia el archivo en CADA arranque. Con eso el
+              # ejercicio no demostraba nada: el archivo reaparecia aunque el
+              # volumen se hubiera perdido por completo.
+              #
+              # Asi, en cambio, despues de borrar el Pod el archivo tiene DOS
+              # lineas. La primera es la prueba de que el volumen sobrevivio.
+              echo "arranque $(date -u '+%Y-%m-%d %H:%M:%S UTC') en el pod $(hostname)" >> /data/arranques.txt
+              echo "--- contenido de /data/arranques.txt ---"
+              cat /data/arranques.txt
+              sleep 3600
+          volumeMounts:
+            - name: persistent-data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"

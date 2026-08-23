@@ -13,20 +13,40 @@ spec:
         app: web
     spec:
       containers:
-      - name: web
-        image: simple-web-db
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 8080
-        env:
-        - name: DB_HOST
-          value: db
-        - name: DB_USER
-          value: postgres
-        - name: DB_NAME
-          value: postgres
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: password
+        - name: web
+          # Tag explicito. Con `simple-web-db` a secas Kubernetes asume
+          # `:latest`, y `:latest` mas imagenes construidas a mano es la receta
+          # exacta para "ya la reconstrui y sigue corriendo la vieja".
+          # El README construye esta misma etiqueta.
+          image: simple-web-db:1.0
+          # Imprescindible: la imagen se construye en el demonio Docker de
+          # minikube y NO existe en ningun registro. Sin esto, Kubernetes
+          # intentaria descargarla y el Pod quedaria en ErrImagePull.
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: db
+            - name: DB_USER
+              value: postgres
+            - name: DB_NAME
+              value: postgres
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "300m"
+              memory: "256Mi"

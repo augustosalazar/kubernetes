@@ -13,14 +13,27 @@ spec:
         app: configmap-demo
     spec:
       volumes:
-      - name: config
-        configMap:
-          name: app-config
+        - name: config
+          configMap:
+            # Este ConfigMap se crea a mano ANTES del apply (ver el README).
+            # Si no existe, el Pod se queda en ContainerCreating con el evento
+            # "configmap 'app-config' not found".
+            name: app-config
 
       containers:
-      - name: app
-        image: busybox
-        command: ["sh", "-c", "cat /config/APP_MODE && sleep 3600"]
-        volumeMounts:
-        - name: config
-          mountPath: /config
+        - name: app
+          image: busybox:1.36
+          command: ["sh", "-c", "cat /config/APP_MODE && sleep 3600"]
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              # Un ConfigMap montado como volumen siempre es de solo lectura;
+              # se declara para que quede explicito.
+              readOnly: true
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"

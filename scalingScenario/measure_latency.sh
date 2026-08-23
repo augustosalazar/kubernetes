@@ -1,22 +1,34 @@
-#!/bin/sh
+#!/usr/bin/env bash
+# Mide cuanto tarda un lote de peticiones contra el Service.
+#
+#   bash measure_latency.sh <URL> [PETICIONES] [PARALELISMO]
+#
+# Ejemplo:
+#   bash measure_latency.sh http://127.0.0.1:30081 12 4
+set -u
 
-SERVICE_URL="$1"
-REQUESTS="${2:-5}"      # default: 5 requests
-PARALLELISM=4          # default: 4 parallel requests
+SERVICE_URL="${1:-}"
+REQUESTS="${2:-12}"      # por defecto: 12 peticiones
+PARALLELISM="${3:-4}"    # por defecto: 4 en paralelo  (antes estaba fijo en 4
+                         # aunque el uso decia que se podia pasar por argumento)
 
 if [ -z "$SERVICE_URL" ]; then
-  echo "Usage: $0 <SERVICE_URL> [REQUESTS] [PARALLELISM]"
+  echo "Uso: $0 <URL_DEL_SERVICIO> [PETICIONES] [PARALELISMO]" >&2
   exit 1
 fi
 
-echo "Service URL : $SERVICE_URL"
-echo "Requests    : $REQUESTS"
-echo "Parallelism : $PARALLELISM"
+echo "URL         : $SERVICE_URL"
+echo "Peticiones  : $REQUESTS"
+echo "Paralelismo : $PARALLELISM"
 echo
 
-time sh -c "
-seq 1 $REQUESTS | xargs -n1 -P$PARALLELISM -I{} sh -c '
-  echo \"Request {}\"
-  curl -w \"  took %{time_total}s\n\" -o /dev/null -s $SERVICE_URL
-'
-"
+inicio=$(date +%s)
+
+# -I{} ya implica una linea por invocacion; anadir -n1 provoca un warning.
+seq 1 "$REQUESTS" | xargs -P"$PARALLELISM" -I{} \
+  curl -s -o /dev/null -w "  peticion {} tardo %{time_total}s\n" "$SERVICE_URL"
+
+fin=$(date +%s)
+
+echo
+echo "Total: $((fin - inicio)) s para $REQUESTS peticiones con $PARALLELISM en paralelo"

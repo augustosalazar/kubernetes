@@ -1,96 +1,116 @@
-# emptyDir – Shared Volume Between Containers
+# emptyDir — un volumen compartido entre contenedores
 
-This example demonstrates how **two containers in the same Pod** can share data using an **`emptyDir` volume**.
+Este ejemplo muestra cómo **dos contenedores del mismo Pod** comparten datos a
+través de un volumen `emptyDir`.
 
-The Deployment runs:
-- a **writer** container that creates a file
-- a **reader** container that reads that file
+El Deployment ejecuta:
 
-Both containers mount the **same volume** at `/data`.
+- un contenedor **writer**, que crea un archivo
+- un contenedor **reader**, que lo lee
+
+Los dos montan **el mismo volumen** en `/data`.
 
 ---
 
-## Starting the Deployment
+## Desplegar
 
-Create the Deployment using the provided manifest:
-
-```bash
+```powershell
 kubectl apply -f emptydir-deployment.yaml
-```
-
-Verify that the Pod is running:
-
-```bash
 kubectl get pods
 ```
 
-You should see one Pod created by the Deployment.
+```bash
+kubectl apply -f emptydir-deployment.yaml
+kubectl get pods
+```
 
----
+Debería aparecer **un** Pod con `READY 2/2`: un Pod, dos contenedores.
 
-## Observing shared storage between containers
+## Ver lo que hizo el reader sin entrar a nada
 
-The `emptyDir` volume is created once when the Pod starts and is shared by all containers inside that Pod.
+```powershell
+kubectl logs deploy/emptydir-demo -c reader
+```
 
----
+```bash
+kubectl logs deploy/emptydir-demo -c reader
+```
 
-## Entering the reader container
+Ahí ya se ve el contenido del archivo que escribió *el otro* contenedor.
 
-To inspect what the writer container has produced, open a shell inside the **reader** container:
+## Entrar al contenedor reader
+
+```powershell
+kubectl exec -it deploy/emptydir-demo -c reader -- sh
+```
 
 ```bash
 kubectl exec -it deploy/emptydir-demo -c reader -- sh
 ```
 
-This connects you directly to the reader container.
+> `-c reader` no es opcional: el Pod tiene dos contenedores y sin esa opción
+> `kubectl` no sabe a cuál conectarse.
+>
+> En Windows, este comando necesita una consola interactiva de verdad. Funciona
+> en Windows Terminal, PowerShell y CMD; en **PowerShell ISE se queda colgado**.
 
----
-
-## Inspecting the shared volume
-
-Inside the container, list the contents of the mounted directory:
+Dentro del contenedor:
 
 ```sh
 ls /data
-```
-
-You should see a file created by the writer container:
-
-```text
-file.txt
-```
-
-Display its contents:
-
-```sh
 cat /data/file.txt
+exit
 ```
 
-The output confirms that:
-- the file was written by a **different container**
-- both containers are accessing the **same filesystem**
+La salida confirma dos cosas:
+
+- el archivo lo escribió un contenedor **distinto**
+- los dos ven **el mismo sistema de archivos**
 
 ---
 
-## What this demonstrates
+## Lo que demuestra
 
-- `emptyDir` is **Pod-scoped**
-- All containers in the same Pod see the **same data**
-- Containers can cooperate without networking or services
-- Data sharing happens through the filesystem
+- `emptyDir` tiene alcance de **Pod**
+- Todos los contenedores del Pod ven **los mismos datos**
+- Pueden cooperar sin red y sin Services: se pasan cosas por el sistema de archivos
 
----
+## Ciclo de vida — compruébenlo
 
-## Lifecycle note
+Miren la fecha que guardó el writer, borren el Pod y vuelvan a mirar:
 
-If the Pod is deleted or recreated:
-- the `emptyDir` volume is destroyed
-- all data inside it is lost
+```powershell
+kubectl exec deploy/emptydir-demo -c reader -- cat /data/file.txt
+kubectl delete pod -l app=emptydir-demo
+kubectl get pods -w        # esperen a que el nuevo esté 2/2
+kubectl exec deploy/emptydir-demo -c reader -- cat /data/file.txt
+```
 
-This makes `emptyDir` suitable for **temporary data only**.
+```bash
+kubectl exec deploy/emptydir-demo -c reader -- cat /data/file.txt
+kubectl delete pod -l app=emptydir-demo
+kubectl get pods -w
+kubectl exec deploy/emptydir-demo -c reader -- cat /data/file.txt
+```
 
----
+La fecha **cambió**. No es que el archivo se conservara: el volumen se destruyó
+con el Pod viejo y el writer del Pod nuevo lo creó otra vez desde cero. Por eso
+`emptyDir` sirve solo para **datos temporales**.
 
-## Key takeaway
+Compárenlo con [`../persistentVolumeClaim/`](../persistentVolumeClaim/), donde
+esa misma prueba da el resultado contrario.
 
-> **`emptyDir` enables fast, temporary data sharing between containers in the same Pod.**
+## Idea principal
+
+> **`emptyDir` permite compartir datos rápido y de forma temporal entre
+> contenedores del mismo Pod.**
+
+## Limpieza
+
+```powershell
+kubectl delete -f emptydir-deployment.yaml
+```
+
+```bash
+kubectl delete -f emptydir-deployment.yaml
+```

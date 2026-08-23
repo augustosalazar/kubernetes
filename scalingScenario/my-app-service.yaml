@@ -1,13 +1,16 @@
+# NodePort 30081, no 30080: ese lo usa ../simpleNginx. Si los dos ejercicios
+# piden el mismo puerto, el segundo `apply` falla con
+#     provided port is already allocated
 apiVersion: v1
 kind: Service
 metadata:
-  name: my-app-nginx-service
+  name: slow-app-service
 spec:
   type: NodePort
   selector:
-    app: my-app
+    app: slow-app
   ports:
     - protocol: TCP
-      port: 80         # Port on the service
-      targetPort: 80   # Port on the container (Nginx is on 80)
-      nodePort: 30080  # Port on the node, accessible externally
+      port: 80         # Puerto del Service (dentro del cluster)
+      targetPort: 8080 # Puerto del contenedor (el servidor Python escucha ahi)
+      nodePort: 30081  # Puerto del nodo, accesible desde fuera

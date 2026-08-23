@@ -1,36 +1,72 @@
+# Un servidor HTTP deliberadamente LENTO: cada peticion tarda 2 segundos.
+#
+# No es nginx (el nombre anterior, "my-app-nginx-deployment", era enganoso y
+# ademas chocaba con el Deployment de ../simpleNginx). Es un servidor Python
+# minimo que duerme 2 s antes de responder, para que el efecto de escalar se
+# note sin herramientas de carga.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app-nginx-deployment
+  name: slow-app-deployment
+  labels:
+    app: slow-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-app
+      app: slow-app
   template:
     metadata:
       labels:
-        app: my-app
+        app: slow-app
     spec:
       containers:
-      - name: slow-server
-        image: python:3.11-slim
-        command:
-          - sh
-          - -c
-          - |
-            python - << 'EOF'
-            from http.server import HTTPServer, BaseHTTPRequestHandler
-            import time, socket
+        - name: slow-server
+          image: python:3.11-slim
+          command:
+            - sh
+            - -c
+            - |
+              python - << 'EOF'
+              from http.server import HTTPServer, BaseHTTPRequestHandler
+              import time, socket
 
-            class Handler(BaseHTTPRequestHandler):
-                def do_GET(self):
-                    time.sleep(2)
-                    self.send_response(200)
-                    self.end_headers()
-                    self.wfile.write(f"Handled by {socket.gethostname()}\n".encode())
+              class Handler(BaseHTTPRequestHandler):
+                  def do_GET(self):
+                      # /healthz responde al instante: lo usa la readinessProbe.
+                      # Si tambien durmiera 2 s, el Pod tardaria de mas en
+                      # entrar al Service.
+                      if self.path == "/healthz":
+                          self.send_response(200)
+                          self.end_headers()
+                          self.wfile.write(b"ok\n")
+                          return
+                      time.sleep(2)
+                      self.send_response(200)
+                      self.end_headers()
+                      self.wfile.write(f"Handled by {socket.gethostname()}\n".encode())
 
-            HTTPServer(("", 80), Handler).serve_forever()
-            EOF
-        ports:
-        - containerPort: 80
+                  # Silencia el log por peticion: ensucia `kubectl logs`.
+                  def log_message(self, *args):
+                      pass
+
+              HTTPServer(("", 8080), Handler).serve_forever()
+              EOF
+          ports:
+            - containerPort: 8080
+          # Sin esto, al escalar el Service empieza a mandar trafico a Pods que
+          # todavia no tienen el servidor Python arriba, y las mediciones salen
+          # con errores de conexion en vez de con latencias.
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

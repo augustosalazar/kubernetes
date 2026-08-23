@@ -3,8 +3,14 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-demo
 spec:
+  # ReadWriteOnce: lo pueden montar Pods de un solo nodo a la vez. Es lo que
+  # soportan casi todos los provisionadores locales (minikube, kind, Docker
+  # Desktop). Con replicas > 1 repartidas en varios nodos, esto se queda corto.
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
+  # Sin storageClassName: usa la StorageClass por defecto del cluster. En
+  # minikube es 'standard' y aprovisiona sola. Comprobar con:
+  #   kubectl get storageclass

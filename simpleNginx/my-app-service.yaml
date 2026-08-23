@@ -1,3 +1,7 @@
+# Service de tipo NodePort: expone los Pods fuera del cluster.
+#
+# OJO: el puerto 30080 tambien lo usaba scalingScenario. Para que los dos
+# ejercicios puedan convivir, aquel se movio al 30081.
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,6 +12,6 @@ spec:
     app: my-app
   ports:
     - protocol: TCP
-      port: 80         # Port on the service
-      targetPort: 80   # Port on the container (Nginx is on 80)
-      nodePort: 30080  # Port on the node, accessible externally
+      port: 80         # Puerto del Service (dentro del cluster)
+      targetPort: 80   # Puerto del contenedor (nginx escucha en 80)
+      nodePort: 30080  # Puerto del nodo, accesible desde fuera

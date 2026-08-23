@@ -1,3 +1,8 @@
+# ClusterIP: solo accesible DESDE DENTRO del cluster. La base de datos no tiene
+# por que estar expuesta fuera.
+#
+# El nombre del Service, `db`, es el nombre DNS que usa la aplicacion:
+# en web-deployment.yaml, DB_HOST vale exactamente "db".
 apiVersion: v1
 kind: Service
 metadata:
@@ -7,5 +12,6 @@ spec:
   selector:
     app: db
   ports:
-  - port: 5432
-    targetPort: 5432
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

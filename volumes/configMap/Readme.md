@@ -1,42 +1,110 @@
+# ConfigMap — configuración como archivos
 
-# ConfigMap – Simple Example
-
-This example shows how to use a **ConfigMap** to provide configuration data to a container using a volume.
+Cómo usar un **ConfigMap** para darle configuración a un contenedor a través de
+un volumen.
 
 ---
 
-## Create the ConfigMap
+## Crear el ConfigMap
 
-Create a ConfigMap named app-config with one key–value pair APP_MODE=production.
+Un ConfigMap llamado `app-config` con una sola pareja clave–valor,
+`APP_MODE=production`:
 
-```bash
+```powershell
 kubectl create configmap app-config --from-literal=APP_MODE=production
-```
-
-Verify that the ConfigMap was created successfully
-
-```bash
 kubectl get configmaps
 ```
 
-## Apply the deployment
+```bash
+kubectl create configmap app-config --from-literal=APP_MODE=production
+kubectl get configmaps
+```
+
+> **Háganlo antes del `apply`.** Si el ConfigMap no existe, el Pod se queda en
+> `ContainerCreating` con el evento `configmap "app-config" not found`. Se
+> comprueba con `kubectl describe pod -l app=configmap-demo`.
+
+## Aplicar el Deployment
+
+```powershell
+kubectl apply -f configmap-deployment.yaml
+kubectl get pods
+```
 
 ```bash
 kubectl apply -f configmap-deployment.yaml
+kubectl get pods
 ```
 
-## Verify that the ConfigMap was created successfully
+## Comprobar que llegó al contenedor
+
+Lo más rápido, sin entrar a nada:
+
+```powershell
+kubectl exec deploy/configmap-demo -- cat /config/APP_MODE
+```
+
+```bash
+kubectl exec deploy/configmap-demo -- cat /config/APP_MODE
+```
+
+Salida esperada:
+
+```text
+production
+```
+
+O entrando al contenedor:
+
+```powershell
+kubectl exec -it deploy/configmap-demo -- sh
+```
 
 ```bash
 kubectl exec -it deploy/configmap-demo -- sh
 ```
 
-```bash
+> En Windows este comando necesita una consola interactiva de verdad: funciona en
+> Windows Terminal, PowerShell y CMD, pero en **PowerShell ISE se queda colgado**.
+
+Dentro:
+
+```sh
+ls /config
 cat /config/APP_MODE
+exit
 ```
 
-Expected output:
+Fíjense en que **cada clave del ConfigMap es un archivo** dentro de `/config`.
+
+---
+
+## Para observar
+
+Cambien el valor y miren qué pasa:
+
+```powershell
+kubectl create configmap app-config --from-literal=APP_MODE=debug --dry-run=client -o yaml | kubectl apply -f -
+kubectl exec deploy/configmap-demo -- cat /config/APP_MODE
+```
 
 ```bash
-production
-``` 
+kubectl create configmap app-config --from-literal=APP_MODE=debug --dry-run=client -o yaml | kubectl apply -f -
+kubectl exec deploy/configmap-demo -- cat /config/APP_MODE
+```
+
+El archivo montado se actualiza solo, sin recrear el Pod, aunque puede tardar
+hasta un minuto (kubelet lo sincroniza periódicamente). Lo que **no** cambia solo
+es una variable de entorno cargada desde un ConfigMap: eso sí exige reiniciar el Pod.
+
+## Limpieza
+
+```powershell
+kubectl delete -f configmap-deployment.yaml
+kubectl delete configmap app-config
+```
+
+```bash
+kubectl delete -f configmap-deployment.yaml
+kubectl delete configmap app-config
+```

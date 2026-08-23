@@ -1,3 +1,8 @@
+# NodePort: expone la web fuera del cluster.
+#
+# Sin `nodePort` explicito, Kubernetes asigna uno libre del rango 30000-32767.
+# Se deja asi a proposito para que este ejercicio no choque con simpleNginx
+# (30080) ni con scalingScenario (30081).
 apiVersion: v1
 kind: Service
 metadata:
@@ -7,5 +12,6 @@ spec:
   selector:
     app: web
   ports:
-  - port: 80
-    targetPort: 8080
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

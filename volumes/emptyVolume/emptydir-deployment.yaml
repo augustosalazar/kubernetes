@@ -13,31 +13,55 @@ spec:
         app: emptydir-demo
     spec:
       containers:
-      - name: writer
-        image: busybox
-        command:
-          - sh
-          - -c
-          - |
-            echo "Hello from writer container" > /data/file.txt;
-            sleep 3600
-        volumeMounts:
-        - name: shared-data
-          mountPath: /data
+        - name: writer
+          # Version fijada: sin tag, Kubernetes trae busybox:latest y el
+          # ejercicio deja de ser reproducible.
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Hola desde el contenedor writer" > /data/file.txt
+              echo "escrito a las $(date)" >> /data/file.txt
+              sleep 3600
+          volumeMounts:
+            - name: shared-data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
 
-      - name: reader
-        image: busybox
-        command:
-          - sh
-          - -c
-          - |
-            sleep 5;
-            cat /data/file.txt;
-            sleep 3600
-        volumeMounts:
-        - name: shared-data
-          mountPath: /data
+        - name: reader
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              # Espera a que el writer cree el archivo en vez de dormir a ciegas:
+              # con `sleep 5` fijo, si el writer tarda un poco mas el reader
+              # imprime un error y ya no vuelve a intentarlo.
+              while [ ! -f /data/file.txt ]; do
+                echo "esperando a que el writer escriba..."
+                sleep 1
+              done
+              echo "--- lo que veo desde el reader ---"
+              cat /data/file.txt
+              sleep 3600
+          volumeMounts:
+            - name: shared-data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
 
       volumes:
-      - name: shared-data
-        emptyDir: {}
+        - name: shared-data
+          emptyDir: {}

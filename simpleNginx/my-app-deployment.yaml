@@ -1,3 +1,4 @@
+# Deployment minimo: N replicas de nginx, nada mas.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,7 +16,22 @@ spec:
         app: my-app
     spec:
       containers:
-      - name: nginx
-        image: nginx:latest
-        ports:
-        - containerPort: 80
+        - name: nginx
+          # Version fijada a proposito. Con `nginx:latest` el ejercicio deja de
+          # ser reproducible: cada quien puede acabar con una imagen distinta.
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 5

@@ -1,21 +1,25 @@
 # Ejercicio: Jobs, o qué significa "trabajo que termina"
 
 Cuatro experimentos de unos diez minutos en total. No dependen del proyecto del
-curso ni de ninguna imagen propia: todo corre sobre `busybox`, que el cluster
+curso ni de ninguna imagen propia: todo corre sobre `busybox`, que el clúster
 descarga solo la primera vez.
 
-**Objetivo:** entender, mirando el cluster y no una diapositiva, por qué existe
+**Objetivo:** entender, mirando el clúster y no una diapositiva, por qué existe
 el objeto `Job` cuando ya existe `Deployment`.
 
 ---
 
 ## Requisitos
 
-Un cluster de Kubernetes funcionando y `kubectl` apuntando a él. Sirve
+Un clúster de Kubernetes funcionando y `kubectl` apuntando a él. Sirve
 cualquiera: minikube de uno o varios nodos, kind, o uno remoto.
 
 ```powershell
 kubectl get nodes          # debe listar al menos un nodo en estado Ready
+```
+
+```bash
+kubectl get nodes
 ```
 
 Con varios nodos los experimentos se ven mejor, porque el reintento puede
@@ -24,7 +28,12 @@ cambiar de máquina. Con uno solo, todo lo demás funciona igual.
 ## Preparación
 
 ```powershell
-cd ejercicio-jobs
+cd jobs
+kubectl apply -f 01-namespace.yaml
+```
+
+```bash
+cd jobs
 kubectl apply -f 01-namespace.yaml
 ```
 
@@ -44,15 +53,28 @@ kubectl apply -f 02-job-que-termina.yaml
 kubectl get pods -n ejercicio -o wide -w
 ```
 
+```bash
+kubectl apply -f 02-job-que-termina.yaml
+kubectl get pods -n ejercicio -o wide -w
+```
+
 En la otra ventana, mientras la cuenta avanza:
 
 ```powershell
 kubectl logs -n ejercicio -l job-name=trabajo -f
 ```
 
+```bash
+kubectl logs -n ejercicio -l job-name=trabajo -f
+```
+
 Ahora, **sin esperar a que termine**, mátenle el Pod:
 
 ```powershell
+kubectl delete pod -n ejercicio -l job-name=trabajo
+```
+
+```bash
 kubectl delete pod -n ejercicio -l job-name=trabajo
 ```
 
@@ -73,6 +95,11 @@ kubectl apply -f 03-job-que-falla-never.yaml
 kubectl get pods -n ejercicio -o wide -w
 ```
 
+```bash
+kubectl apply -f 03-job-que-falla-never.yaml
+kubectl get pods -n ejercicio -o wide -w
+```
+
 Este Job falla siempre. Déjenlo correr un par de minutos.
 
 **Preguntas:**
@@ -85,11 +112,20 @@ Este Job falla siempre. Déjenlo correr un par de minutos.
 kubectl describe job trabajo-falla-never -n ejercicio
 ```
 
+```bash
+kubectl describe job trabajo-falla-never -n ejercicio
+```
+
 Busquen la sección `Conditions` y la razón `BackoffLimitExceeded`.
 
 ## Experimento 3 — La misma falla, cambiando una sola palabra
 
 ```powershell
+kubectl apply -f 04-job-que-falla-onfailure.yaml
+kubectl get pods -n ejercicio -o wide -w
+```
+
+```bash
 kubectl apply -f 04-job-que-falla-onfailure.yaml
 kubectl get pods -n ejercicio -o wide -w
 ```
@@ -110,11 +146,20 @@ Comparen las dos de un vistazo:
 kubectl get pods -n ejercicio -o wide
 ```
 
+```bash
+kubectl get pods -n ejercicio -o wide
+```
+
 ## Experimento 4 — El mismo contenedor como Deployment
 
 Este es el importante.
 
 ```powershell
+kubectl apply -f 05-deployment-mismo-trabajo.yaml
+kubectl get pods -n ejercicio -w
+```
+
+```bash
 kubectl apply -f 05-deployment-mismo-trabajo.yaml
 kubectl get pods -n ejercicio -w
 ```
@@ -137,6 +182,29 @@ Bórrenlo antes de seguir, o se quedará reiniciándose:
 kubectl delete -f 05-deployment-mismo-trabajo.yaml
 ```
 
+```bash
+kubectl delete -f 05-deployment-mismo-trabajo.yaml
+```
+
+---
+
+## Los atajos
+
+Dos scripts para no repetir comandos. Hacen lo mismo; usen el de su sistema.
+
+```powershell
+.\observar.ps1        # Jobs, Pods, reparto por nodo y últimos eventos
+.\limpiar.ps1         # borra el namespace completo
+```
+
+```bash
+bash observar.sh      # Jobs, Pods, reparto por nodo y últimos eventos
+bash limpiar.sh       # borra el namespace completo
+```
+
+Los dos aceptan otro namespace como argumento (`.\observar.ps1 -Namespace otro`,
+`bash observar.sh otro`).
+
 ---
 
 ## Dos tropiezos que van a encontrar
@@ -151,6 +219,11 @@ kubectl delete -f 02-job-que-termina.yaml
 kubectl apply  -f 02-job-que-termina.yaml
 ```
 
+```bash
+kubectl delete -f 02-job-que-termina.yaml
+kubectl apply  -f 02-job-que-termina.yaml
+```
+
 Un Deployment sí se deja editar en caliente. Esa asimetría no es un capricho:
 es la misma diferencia de promesa que están investigando.
 
@@ -159,9 +232,29 @@ es la misma diferencia de promesa que están investigando.
 sus Pods se borran automáticamente. Si vuelven al rato y no encuentran nada, no
 se perdió: el TTL controller hizo su trabajo.
 
+## Notas para Windows y PowerShell
+
+- **Para poder ejecutar los `.ps1`**, una sola vez por ventana:
+
+  ```powershell
+  Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+  ```
+
+- **El punto y la barra invertida son obligatorios**: `.\observar.ps1`.
+  PowerShell no ejecuta scripts del directorio actual sin la ruta explícita.
+- Los `.sh` de esta carpeta **no** tienen bit de ejecución (el repo está con
+  `filemode = false`), así que en Linux/macOS conviene invocarlos como
+  `bash observar.sh` en vez de `./observar.sh`.
+- Los manifiestos llevan dentro scripts de shell. Eso no es problema en Windows:
+  ese código no lo ejecuta PowerShell, lo ejecuta el contenedor, que es Linux.
+
 ## Limpieza
 
 ```powershell
+kubectl delete namespace ejercicio
+```
+
+```bash
 kubectl delete namespace ejercicio
 ```
 

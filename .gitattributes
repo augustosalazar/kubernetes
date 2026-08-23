@@ -1,0 +1,27 @@
+# Normalizacion de finales de linea.
+#
+# Sin este archivo, editar el repo en Windows convierte todo a CRLF y
+# `git status` marca decenas de archivos como modificados sin que haya
+# ningun cambio real. Peor: un .sh con CRLF no se ejecuta en Linux ni
+# dentro de un contenedor, falla con
+#     syntax error: unexpected end of file
+#
+# Todo se guarda en el repositorio con LF.
+* text=auto eol=lf
+
+# Estos se ejecutan en Linux (o dentro de un contenedor): tienen que ser LF.
+*.sh        text eol=lf
+*.yaml      text eol=lf
+*.yml       text eol=lf
+*.py        text eol=lf
+*.md        text eol=lf
+Dockerfile  text eol=lf
+
+# PowerShell se ejecuta en Windows: alli CRLF es lo natural.
+*.ps1       text eol=crlf
+
+# Binarios: que git no los toque.
+*.png  binary
+*.jpg  binary
+*.gif  binary
+*.pdf  binary
