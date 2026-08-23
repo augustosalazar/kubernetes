@@ -6,6 +6,10 @@ Run the command below to replace the deployment:
 kubectl apply -f my-app-deployment.yaml
 ```
 
+```bash
+kubectl apply -f my-app-service.yaml
+```
+
 To get the URL of the service, run the command below:
 ```bash
 minikube service my-app-nginx-service --url

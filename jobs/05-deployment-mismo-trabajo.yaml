@@ -1,0 +1,75 @@
+# EXPERIMENTO 4: EXACTAMENTE el mismo contenedor, pero como Deployment.
+#
+# Este es el experimento mas importante de los cuatro. El trabajo es el mismo
+# que en 02-job-que-termina.yaml, solo que dura 20 segundos y el objeto que lo
+# envuelve es un Deployment en vez de un Job.
+#
+#   kubectl apply -f 05-deployment-mismo-trabajo.yaml
+#   kubectl get pods -n ejercicio -w
+#
+# Que esperar: el contenedor termina bien (exit 0) y aun asi el Pod vuelve a
+# arrancar, una y otra vez. La columna RESTARTS crece sin parar, y despues de
+# unos cuantos ciclos el Pod entra en CrashLoopBackOff.
+#
+# No es un error de configuracion. Un Deployment promete "mantener N replicas
+# CORRIENDO"; para el, un contenedor que termina es una replica que se cayo, y
+# su trabajo es levantarla. Terminar es exactamente lo que no debe pasar.
+#
+# Un Job promete algo distinto: "que esto se ejecute hasta completarse". Por eso
+# un Job se detiene cuando el contenedor sale con 0, y un Deployment no puede.
+#
+# NO SE OLVIDEN DE BORRARLO, o seguira reiniciandose indefinidamente:
+#   kubectl delete -f 05-deployment-mismo-trabajo.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mismo-trabajo
+  namespace: ejercicio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mismo-trabajo
+  template:
+    metadata:
+      labels:
+        app: mismo-trabajo
+    spec:
+      # Un Deployment NO admite restartPolicy: Never ni OnFailure. Solo existe
+      # Always, y por eso ni siquiera aparece escrito aqui: es el unico valor
+      # posible. Prueben a ponerlo y la API rechazara el objeto.
+      containers:
+        - name: tarea
+          image: busybox:1.36
+          env:
+            - name: SEGUNDOS
+              value: "20"
+            - name: NODO
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "nodo=$NODO  pod=$(hostname)"
+              echo "voy a trabajar durante $SEGUNDOS segundos"
+              i=1
+              while [ $i -le $SEGUNDOS ]; do
+                echo "  trabajando... $i/$SEGUNDOS"
+                sleep 1
+                i=$((i + 1))
+              done
+              echo "TERMINADO correctamente"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "200m"
+              memory: "64Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop: ["ALL"]

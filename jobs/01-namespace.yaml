@@ -1,0 +1,9 @@
+# Un namespace propio para el ejercicio, separado de cualquier otro trabajo.
+# Sin ResourceQuota a proposito: aqui no queremos que nada quede en Pending,
+# el tema de este ejercicio es el ciclo de vida de los Jobs, no la capacidad.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ejercicio
+  labels:
+    proposito: ejercicio-jobs

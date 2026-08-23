@@ -1,0 +1,58 @@
+# EXPERIMENTO 3: el MISMO fallo, pero con restartPolicy: OnFailure.
+#
+# Es identico al experimento 2 salvo por una palabra. Ejecuten los dos y
+# comparen la salida de:
+#
+#   kubectl get pods -n ejercicio -o wide
+#
+# Con Never          -> varios Pods, cada uno con RESTARTS 0
+# Con OnFailure      -> UN solo Pod, con la columna RESTARTS subiendo
+#
+# La diferencia importa: con OnFailure el kubelet reinicia el contenedor
+# DENTRO del mismo Pod, asi que el reintento nunca cambia de nodo. Con Never
+# el Job crea un Pod nuevo y el scheduler vuelve a decidir donde ponerlo.
+#
+# Por eso el proyecto usa Never: sin eso, no se puede demostrar que un fallo
+# se recupera en otra maquina.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: trabajo-falla-onfailure
+  namespace: ejercicio
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 600
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      # <<< LA UNICA DIFERENCIA CON EL EXPERIMENTO 2 >>>
+      restartPolicy: OnFailure
+      containers:
+        - name: tarea
+          image: busybox:1.36
+          env:
+            - name: NODO
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "nodo=$NODO  pod=$(hostname)"
+              echo "trabajando un poco antes de fallar..."
+              sleep 5
+              echo "fallo deliberado" >&2
+              exit 1
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "200m"
+              memory: "64Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop: ["ALL"]
