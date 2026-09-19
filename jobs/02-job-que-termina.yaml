@@ -34,7 +34,9 @@ spec:
           image: busybox:1.36
           env:
             - name: SEGUNDOS
-              value: "60"
+              # Dos minutos dan tiempo para observar los Pods, los logs y matar
+              # uno a mitad de la ejecución sin tener que correr.
+              value: "120"
             # API Downward: asi el contenedor sabe en que nodo cayo, sin
             # tener ningun acceso a la API de Kubernetes.
             - name: NODO

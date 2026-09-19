@@ -73,6 +73,18 @@ kubectl delete pod -n ejercicio -l job-name=trabajo
 Cuando termine, fíjense en que el Job queda en `Completed` y deja de crear
 Pods. Ese "dejar de crear" es la diferencia con todo lo que vieron antes.
 
+### Repetir el experimento
+
+Un Job que terminó no vuelve a ejecutarse al aplicar el mismo manifiesto: su
+trabajo ya está marcado como completado. Para iniciar una ejecución nueva,
+borren el Job y créenlo de nuevo:
+
+```sh
+kubectl delete -f 02-job-que-termina.yaml
+kubectl apply -f 02-job-que-termina.yaml
+kubectl get pods -n ejercicio -o wide -w
+```
+
 ## Experimento 2 — Reintentos hasta agotar el presupuesto
 
 ```sh
@@ -80,7 +92,27 @@ kubectl apply -f 03-job-que-falla-never.yaml
 kubectl get pods -n ejercicio -o wide -w
 ```
 
-Este Job falla siempre. Déjenlo correr un par de minutos.
+Este Job falla siempre. Antes de observarlo, lean los tres límites que definen
+su ciclo de vida:
+
+```yaml
+backoffLimit: 2
+activeDeadlineSeconds: 600
+ttlSecondsAfterFinished: 600
+```
+
+- `backoffLimit: 2` permite **dos reintentos** después del primer intento que
+  falla. Con `restartPolicy: Never`, eso se ve normalmente como hasta **tres
+  Pods** distintos: el inicial y dos reemplazos.
+- `activeDeadlineSeconds: 600` pone un límite de **diez minutos para todo el
+  Job**, incluidos los tiempos de espera progresivos entre reintentos. Si se
+  alcanza antes de agotar `backoffLimit`, el Job termina por plazo vencido.
+- `ttlSecondsAfterFinished: 600` no limita la ejecución: espera diez minutos
+  **después** de que el Job termine como `Complete` o `Failed`, y entonces borra
+  el Job y sus Pods.
+
+En este ejercicio los fallos ocurren rápido, así que deberían agotarse primero
+los dos reintentos y el Job debería terminar como `Failed`.
 
 **Preguntas:**
 
@@ -92,7 +124,9 @@ Este Job falla siempre. Déjenlo correr un par de minutos.
 kubectl describe job trabajo-falla-never -n ejercicio
 ```
 
-Busquen la sección `Conditions` y la razón `BackoffLimitExceeded`.
+En la sección `Conditions`, confirmen la razón final: normalmente será
+`BackoffLimitExceeded`. Si fuera `DeadlineExceeded`, el plazo total de diez
+minutos se habría agotado antes de consumir los reintentos.
 
 ## Experimento 3 — La misma falla, cambiando una sola palabra
 
@@ -102,6 +136,19 @@ kubectl get pods -n ejercicio -o wide -w
 ```
 
 Este manifiesto es idéntico al anterior salvo por `restartPolicy: OnFailure`.
+
+La diferencia está en **dónde se reintenta el trabajo**:
+
+| Política | Después de `exit 1` | Qué deberían ver |
+|---|---|---|
+| `Never` | El Pod termina en `Error` y el Job crea otro Pod. | Varios Pods con nombres distintos; normalmente `RESTARTS` queda en 0. |
+| `OnFailure` | El kubelet reinicia el contenedor dentro del mismo Pod. | Normalmente un solo Pod; la columna `RESTARTS` aumenta. |
+
+Con `OnFailure`, los reintentos normales ocurren en el mismo Pod y, por tanto,
+en el mismo nodo. Con `Never`, cada reintento usa un Pod nuevo y el scheduler
+puede volver a decidir dónde ubicarlo; puede elegir otro nodo, aunque no está
+garantizado. `backoffLimit`, `activeDeadlineSeconds` y
+`ttlSecondsAfterFinished` conservan el mismo significado en ambas políticas.
 
 **Preguntas:**
 
@@ -229,7 +276,7 @@ desde código en vez de a mano— deja de ser un salto.
 | Archivo | Para qué |
 |---|---|
 | `01-namespace.yaml` | Namespace `ejercicio`, aislado de todo lo demás |
-| `02-job-que-termina.yaml` | Job que dura 60 s; para matarle el Pod a mitad |
+| `02-job-que-termina.yaml` | Job que dura 120 s; para matarle el Pod a mitad |
 | `03-job-que-falla-never.yaml` | Falla siempre, `restartPolicy: Never` |
 | `04-job-que-falla-onfailure.yaml` | El mismo fallo, `restartPolicy: OnFailure` |
 | `05-deployment-mismo-trabajo.yaml` | El mismo contenedor como Deployment |
