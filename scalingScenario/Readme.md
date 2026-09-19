@@ -10,25 +10,14 @@ El objetivo es medirlo, no suponerlo.
 
 ## Inicio desde cero
 
-```powershell
-kubectl delete -f my-app-service.yaml --ignore-not-found
-kubectl delete -f my-app-deployment.yaml --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f my-app-service.yaml --ignore-not-found
 kubectl delete -f my-app-deployment.yaml --ignore-not-found
 ```
 
 ## Desplegar
 
-```powershell
-kubectl apply -f my-app-deployment.yaml
-kubectl apply -f my-app-service.yaml
-kubectl rollout status deployment/slow-app-deployment
-```
-
-```bash
+```sh
 kubectl apply -f my-app-deployment.yaml
 kubectl apply -f my-app-service.yaml
 kubectl rollout status deployment/slow-app-deployment
@@ -41,7 +30,7 @@ La primera vez tarda un poco: hay que descargar la imagen de Python.
 Ejecuten este comando en una terminal y déjenlo abierto; hagan las mediciones
 desde otra terminal.
 
-```bash
+```sh
 kubectl port-forward service/slow-app-service 8080:80
 ```
 
@@ -74,12 +63,7 @@ que desaparece al escalar.
 
 ## Escalar y volver a medir
 
-```powershell
-kubectl scale deployment slow-app-deployment --replicas=3
-kubectl get pods -w      # esperen a que los 3 estén Ready
-```
-
-```bash
+```sh
 kubectl scale deployment slow-app-deployment --replicas=3
 kubectl get pods -w
 ```
@@ -141,12 +125,7 @@ bash measure_latency.sh <URL> 12 4
 
 ## Limpieza
 
-```powershell
-kubectl delete -f my-app-service.yaml --ignore-not-found
-kubectl delete -f my-app-deployment.yaml --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f my-app-service.yaml --ignore-not-found
 kubectl delete -f my-app-deployment.yaml --ignore-not-found
 ```

@@ -7,24 +7,14 @@ de un volumen.
 
 ## Inicio desde cero
 
-```powershell
-kubectl delete -f secret-deployment.yaml --ignore-not-found
-kubectl delete secret db-secret --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f secret-deployment.yaml --ignore-not-found
 kubectl delete secret db-secret --ignore-not-found
 ```
 
 ## Crear el Secret
 
-```powershell
-kubectl create secret generic db-secret --from-literal=password=supersecret
-kubectl get secret db-secret
-```
-
-```bash
+```sh
 kubectl create secret generic db-secret --from-literal=password=supersecret
 kubectl get secret db-secret
 ```
@@ -34,23 +24,14 @@ kubectl get secret db-secret
 
 ## Aplicar el Deployment
 
-```powershell
-kubectl apply -f secret-deployment.yaml
-kubectl get pods
-```
-
-```bash
+```sh
 kubectl apply -f secret-deployment.yaml
 kubectl get pods
 ```
 
 ## Comprobar el Secret dentro del contenedor
 
-```powershell
-kubectl exec deploy/secret-demo -- cat /secrets/password
-```
-
-```bash
+```sh
 kubectl exec deploy/secret-demo -- cat /secrets/password
 ```
 
@@ -62,11 +43,7 @@ supersecret
 
 O entrando:
 
-```powershell
-kubectl exec -it deploy/secret-demo -- sh
-```
-
-```bash
+```sh
 kubectl exec -it deploy/secret-demo -- sh
 ```
 
@@ -77,11 +54,7 @@ kubectl exec -it deploy/secret-demo -- sh
 
 ## Lo importante: base64 no es cifrado
 
-```powershell
-kubectl get secret db-secret -o yaml
-```
-
-```bash
+```sh
 kubectl get secret db-secret -o yaml
 ```
 
@@ -109,12 +82,7 @@ lee en claro.
 
 ## Limpieza
 
-```powershell
-kubectl delete -f secret-deployment.yaml --ignore-not-found
-kubectl delete secret db-secret --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f secret-deployment.yaml --ignore-not-found
 kubectl delete secret db-secret --ignore-not-found
 ```

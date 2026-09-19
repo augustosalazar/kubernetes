@@ -14,11 +14,7 @@ el objeto `Job` cuando ya existe `Deployment`.
 Un clúster de Kubernetes funcionando y `kubectl` apuntando a él. Sirve
 cualquiera: minikube de uno o varios nodos, kind, o uno remoto.
 
-```powershell
-kubectl get nodes          # debe listar al menos un nodo en estado Ready
-```
-
-```bash
+```sh
 kubectl get nodes
 ```
 
@@ -30,20 +26,11 @@ cambiar de máquina. Con uno solo, todo lo demás funciona igual.
 Para repetir el ejercicio desde cero, borren primero su namespace. `--wait=true`
 espera a que desaparezca antes de crearlo otra vez.
 
-```powershell
+```sh
 kubectl delete namespace ejercicio --ignore-not-found --wait=true
 ```
 
-```bash
-kubectl delete namespace ejercicio --ignore-not-found --wait=true
-```
-
-```powershell
-cd jobs
-kubectl apply -f 01-namespace.yaml
-```
-
-```bash
+```sh
 cd jobs
 kubectl apply -f 01-namespace.yaml
 ```
@@ -59,33 +46,20 @@ Todo vive en el namespace `ejercicio` y se borra de una sola vez al final.
 
 ## Experimento 1 — Un Job que termina, y qué pasa si le matan el Pod
 
-```powershell
-kubectl apply -f 02-job-que-termina.yaml
-kubectl get pods -n ejercicio -o wide -w
-```
-
-```bash
+```sh
 kubectl apply -f 02-job-que-termina.yaml
 kubectl get pods -n ejercicio -o wide -w
 ```
 
 En la otra ventana, mientras la cuenta avanza:
 
-```powershell
-kubectl logs -n ejercicio -l job-name=trabajo -f
-```
-
-```bash
+```sh
 kubectl logs -n ejercicio -l job-name=trabajo -f
 ```
 
 Ahora, **sin esperar a que termine**, mátenle el Pod:
 
-```powershell
-kubectl delete pod -n ejercicio -l job-name=trabajo
-```
-
-```bash
+```sh
 kubectl delete pod -n ejercicio -l job-name=trabajo
 ```
 
@@ -101,12 +75,7 @@ Pods. Ese "dejar de crear" es la diferencia con todo lo que vieron antes.
 
 ## Experimento 2 — Reintentos hasta agotar el presupuesto
 
-```powershell
-kubectl apply -f 03-job-que-falla-never.yaml
-kubectl get pods -n ejercicio -o wide -w
-```
-
-```bash
+```sh
 kubectl apply -f 03-job-que-falla-never.yaml
 kubectl get pods -n ejercicio -o wide -w
 ```
@@ -119,11 +88,7 @@ Este Job falla siempre. Déjenlo correr un par de minutos.
 2. ¿Cuánto tiempo pasó entre un intento y el siguiente? ¿Es constante?
 3. ¿En qué estado quedó el Job al final?
 
-```powershell
-kubectl describe job trabajo-falla-never -n ejercicio
-```
-
-```bash
+```sh
 kubectl describe job trabajo-falla-never -n ejercicio
 ```
 
@@ -131,12 +96,7 @@ Busquen la sección `Conditions` y la razón `BackoffLimitExceeded`.
 
 ## Experimento 3 — La misma falla, cambiando una sola palabra
 
-```powershell
-kubectl apply -f 04-job-que-falla-onfailure.yaml
-kubectl get pods -n ejercicio -o wide -w
-```
-
-```bash
+```sh
 kubectl apply -f 04-job-que-falla-onfailure.yaml
 kubectl get pods -n ejercicio -o wide -w
 ```
@@ -153,11 +113,7 @@ Este manifiesto es idéntico al anterior salvo por `restartPolicy: OnFailure`.
 
 Comparen las dos de un vistazo:
 
-```powershell
-kubectl get pods -n ejercicio -o wide
-```
-
-```bash
+```sh
 kubectl get pods -n ejercicio -o wide
 ```
 
@@ -165,12 +121,7 @@ kubectl get pods -n ejercicio -o wide
 
 Este es el importante.
 
-```powershell
-kubectl apply -f 05-deployment-mismo-trabajo.yaml
-kubectl get pods -n ejercicio -w
-```
-
-```bash
+```sh
 kubectl apply -f 05-deployment-mismo-trabajo.yaml
 kubectl get pods -n ejercicio -w
 ```
@@ -189,11 +140,7 @@ envuelto en un `Deployment` en vez de un `Job`.
 
 Bórrenlo antes de seguir, o se quedará reiniciándose:
 
-```powershell
-kubectl delete -f 05-deployment-mismo-trabajo.yaml
-```
-
-```bash
+```sh
 kubectl delete -f 05-deployment-mismo-trabajo.yaml
 ```
 
@@ -225,12 +172,7 @@ Los dos aceptan otro namespace como argumento (`.\observar.ps1 -Namespace otro`,
 un Job no se puede modificar: representa *una ejecución concreta*, no un estado
 deseado que se ajusta. Hay que borrar y volver a crear:
 
-```powershell
-kubectl delete -f 02-job-que-termina.yaml
-kubectl apply  -f 02-job-que-termina.yaml
-```
-
-```bash
+```sh
 kubectl delete -f 02-job-que-termina.yaml
 kubectl apply  -f 02-job-que-termina.yaml
 ```
@@ -262,11 +204,7 @@ borra manualmente en el experimento 4.
 
 ## Limpieza
 
-```powershell
-kubectl delete namespace ejercicio --ignore-not-found --wait=true
-```
-
-```bash
+```sh
 kubectl delete namespace ejercicio --ignore-not-found --wait=true
 ```
 

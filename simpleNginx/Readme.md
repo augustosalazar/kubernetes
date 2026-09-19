@@ -12,31 +12,21 @@ Ejecuten este bloque antes de empezar, incluso si ya hicieron el ejercicio. Solo
 elimina los recursos de **esta** carpeta y permite repetirlo sin depender del
 estado anterior.
 
-```powershell
-kubectl delete -f my-app-service.yaml --ignore-not-found
-kubectl delete -f my-app-deployment.yaml --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f my-app-service.yaml --ignore-not-found
 kubectl delete -f my-app-deployment.yaml --ignore-not-found
 ```
 
 ## Desplegar
 
-```powershell
-kubectl apply -f my-app-deployment.yaml
-kubectl apply -f my-app-service.yaml
-```
-
-```bash
+```sh
 kubectl apply -f my-app-deployment.yaml
 kubectl apply -f my-app-service.yaml
 ```
 
 Comprobar el estado del Deployment:
 
-```powershell
+```sh
 kubectl get deployments
 kubectl get pods -o wide
 ```
@@ -46,17 +36,13 @@ no ustedes con un comando.
 
 ## Comprobar el Service
 
-```powershell
-kubectl get services
-```
-
-```bash
+```sh
 kubectl get services
 ```
 
 ## Acceder a la aplicación
 
-```powershell
+```sh
 minikube service my-app-nginx-service --url
 ```
 
@@ -79,14 +65,18 @@ curl -s <URL>
 
 Alternativa que funciona igual en todos los sistemas y no depende de minikube:
 
-```powershell
+```sh
 kubectl port-forward service/my-app-nginx-service 8080:80
-# y en otra ventana:  curl.exe -s http://127.0.0.1:8080
+```
+
+En otra terminal, prueben la URL con el comando correspondiente:
+
+```powershell
+curl.exe -s http://127.0.0.1:8080
 ```
 
 ```bash
-kubectl port-forward service/my-app-nginx-service 8080:80
-# y en otra terminal: curl -s http://127.0.0.1:8080
+curl -s http://127.0.0.1:8080
 ```
 
 ---
@@ -97,7 +87,7 @@ Borren un Pod y miren qué pasa:
 
 Dejen `kubectl get pods -w` corriendo en una ventana y, en otra:
 
-```powershell
+```sh
 kubectl delete pod -l app=my-app
 ```
 
@@ -106,12 +96,7 @@ corriendo. Comparen esto con lo que hace un `Job` en la carpeta [`jobs/`](../job
 
 ## Limpieza
 
-```powershell
-kubectl delete -f my-app-service.yaml --ignore-not-found
-kubectl delete -f my-app-deployment.yaml --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f my-app-service.yaml --ignore-not-found
 kubectl delete -f my-app-deployment.yaml --ignore-not-found
 ```

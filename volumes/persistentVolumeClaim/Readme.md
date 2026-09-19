@@ -15,24 +15,14 @@ almacenamiento que **sobrevive al borrado del Pod**.
 
 ## Inicio desde cero
 
-```powershell
-kubectl delete -f pvc-deployment.yaml --ignore-not-found
-kubectl delete -f pvc.yaml --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f pvc-deployment.yaml --ignore-not-found
 kubectl delete -f pvc.yaml --ignore-not-found
 ```
 
 ## Crear el PVC
 
-```powershell
-kubectl apply -f pvc.yaml
-kubectl get pvc
-```
-
-```bash
+```sh
 kubectl apply -f pvc.yaml
 kubectl get pvc
 ```
@@ -40,35 +30,21 @@ kubectl get pvc
 Esperen a que el estado sea **`Bound`**. Si se queda en `Pending`, el clúster no
 tiene una StorageClass por defecto que aprovisione sola:
 
-```powershell
-kubectl get storageclass
-kubectl describe pvc pvc-demo
-```
-
-```bash
+```sh
 kubectl get storageclass
 kubectl describe pvc pvc-demo
 ```
 
 ## Desplegar la aplicación
 
-```powershell
-kubectl apply -f pvc-deployment.yaml
-kubectl get pods
-```
-
-```bash
+```sh
 kubectl apply -f pvc-deployment.yaml
 kubectl get pods
 ```
 
 ## Mirar el estado inicial
 
-```powershell
-kubectl exec deploy/pvc-demo -- cat /data/arranques.txt
-```
-
-```bash
+```sh
 kubectl exec deploy/pvc-demo -- cat /data/arranques.txt
 ```
 
@@ -76,23 +52,14 @@ kubectl exec deploy/pvc-demo -- cat /data/arranques.txt
 
 ## La prueba: borrar el Pod
 
-```powershell
-kubectl delete pod -l app=pvc-demo
-kubectl get pods -w        # esperen a que el nuevo esté Running
-```
-
-```bash
+```sh
 kubectl delete pod -l app=pvc-demo
 kubectl get pods -w
 ```
 
 Y ahora:
 
-```powershell
-kubectl exec deploy/pvc-demo -- cat /data/arranques.txt
-```
-
-```bash
+```sh
 kubectl exec deploy/pvc-demo -- cat /data/arranques.txt
 ```
 
@@ -115,14 +82,7 @@ Repítanlo un par de veces y verán la lista crecer.
 
 Comprueben el punto 1 antes de responder: es la parte contraintuitiva.
 
-```powershell
-kubectl delete -f pvc-deployment.yaml
-kubectl get pvc                       # sigue ahí, Bound
-kubectl apply -f pvc-deployment.yaml
-kubectl exec deploy/pvc-demo -- cat /data/arranques.txt
-```
-
-```bash
+```sh
 kubectl delete -f pvc-deployment.yaml
 kubectl get pvc
 kubectl apply -f pvc-deployment.yaml
@@ -131,12 +91,7 @@ kubectl exec deploy/pvc-demo -- cat /data/arranques.txt
 
 ## Limpieza
 
-```powershell
-kubectl delete -f pvc-deployment.yaml --ignore-not-found
-kubectl delete -f pvc.yaml --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f pvc-deployment.yaml --ignore-not-found
 kubectl delete -f pvc.yaml --ignore-not-found
 ```

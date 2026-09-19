@@ -4,9 +4,9 @@ Colección de ejercicios para aprender Kubernetes con un clúster local. Cada
 carpeta es un tema independiente, con sus manifiestos y su propio README con los
 pasos.
 
-Todos los comandos aparecen en **dos versiones**: PowerShell (Windows) y bash
-(Linux/macOS). Son casi siempre idénticos, pero hay diferencias reales que sí
-rompen los ejercicios; están listadas más abajo.
+Los comandos comunes se muestran una sola vez. Cuando PowerShell (Windows) y
+bash (Linux/macOS) requieren sintaxis distinta, se muestran ambas versiones;
+esas diferencias están listadas más abajo.
 
 ---
 
@@ -31,12 +31,7 @@ rompen los ejercicios; están listadas más abajo.
 
 Comprobación rápida, idéntica en ambos shells:
 
-```powershell
-kubectl version --client
-kubectl get nodes        # al menos un nodo en Ready
-```
-
-```bash
+```sh
 kubectl version --client
 kubectl get nodes
 ```
@@ -106,7 +101,7 @@ Con el driver de Docker en Windows, el comando no devuelve el prompt: mantiene e
 túnel vivo mientras la ventana esté abierta. Déjenla corriendo y trabajen en otra
 ventana. La alternativa, que se comporta igual en todos los sistemas:
 
-```powershell
+```sh
 kubectl port-forward service/my-app-nginx-service 8080:80
 ```
 
@@ -124,10 +119,6 @@ bash jobs/observar.sh
 
 Cada carpeta explica cómo borrar lo suyo. Para dejar el clúster como estaba:
 
-```powershell
-minikube delete
-```
-
-```bash
+```sh
 minikube delete
 ```

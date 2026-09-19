@@ -7,12 +7,7 @@ un volumen.
 
 ## Inicio desde cero
 
-```powershell
-kubectl delete -f configmap-deployment.yaml --ignore-not-found
-kubectl delete configmap app-config --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f configmap-deployment.yaml --ignore-not-found
 kubectl delete configmap app-config --ignore-not-found
 ```
@@ -22,12 +17,7 @@ kubectl delete configmap app-config --ignore-not-found
 Un ConfigMap llamado `app-config` con una sola pareja clave–valor,
 `APP_MODE=production`:
 
-```powershell
-kubectl create configmap app-config --from-literal=APP_MODE=production
-kubectl get configmaps
-```
-
-```bash
+```sh
 kubectl create configmap app-config --from-literal=APP_MODE=production
 kubectl get configmaps
 ```
@@ -38,12 +28,7 @@ kubectl get configmaps
 
 ## Aplicar el Deployment
 
-```powershell
-kubectl apply -f configmap-deployment.yaml
-kubectl get pods
-```
-
-```bash
+```sh
 kubectl apply -f configmap-deployment.yaml
 kubectl get pods
 ```
@@ -52,11 +37,7 @@ kubectl get pods
 
 Lo más rápido, sin entrar a nada:
 
-```powershell
-kubectl exec deploy/configmap-demo -- cat /config/APP_MODE
-```
-
-```bash
+```sh
 kubectl exec deploy/configmap-demo -- cat /config/APP_MODE
 ```
 
@@ -68,11 +49,7 @@ production
 
 O entrando al contenedor:
 
-```powershell
-kubectl exec -it deploy/configmap-demo -- sh
-```
-
-```bash
+```sh
 kubectl exec -it deploy/configmap-demo -- sh
 ```
 
@@ -95,12 +72,7 @@ Fíjense en que **cada clave del ConfigMap es un archivo** dentro de `/config`.
 
 Cambien el valor y miren qué pasa:
 
-```powershell
-kubectl create configmap app-config --from-literal=APP_MODE=debug --dry-run=client -o yaml | kubectl apply -f -
-kubectl exec deploy/configmap-demo -- cat /config/APP_MODE
-```
-
-```bash
+```sh
 kubectl create configmap app-config --from-literal=APP_MODE=debug --dry-run=client -o yaml | kubectl apply -f -
 kubectl exec deploy/configmap-demo -- cat /config/APP_MODE
 ```
@@ -111,12 +83,7 @@ es una variable de entorno cargada desde un ConfigMap: eso sí exige reiniciar e
 
 ## Limpieza
 
-```powershell
-kubectl delete -f configmap-deployment.yaml --ignore-not-found
-kubectl delete configmap app-config --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f configmap-deployment.yaml --ignore-not-found
 kubectl delete configmap app-config --ignore-not-found
 ```

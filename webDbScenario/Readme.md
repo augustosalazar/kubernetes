@@ -35,13 +35,7 @@ con contraseña en un `Secret` y datos en un `PVC`.
 Ejecuten esta limpieza antes de empezar. Borra únicamente los recursos de este
 escenario, incluido el PVC, para que PostgreSQL se inicialice de nuevo.
 
-```powershell
-kubectl delete -f web-service.yaml -f web-deployment.yaml -f db-service.yaml -f db-deployment.yaml --ignore-not-found
-kubectl delete -f db-pvc.yaml --ignore-not-found
-kubectl delete secret db-secret --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f web-service.yaml -f web-deployment.yaml -f db-service.yaml -f db-deployment.yaml --ignore-not-found
 kubectl delete -f db-pvc.yaml --ignore-not-found
 kubectl delete secret db-secret --ignore-not-found
@@ -79,12 +73,7 @@ eval $(minikube docker-env)
 
 Desde esta carpeta:
 
-```powershell
-docker build -t simple-web-db:1.0 .
-docker images simple-web-db
-```
-
-```bash
+```sh
 docker build -t simple-web-db:1.0 .
 docker images simple-web-db
 ```
@@ -97,11 +86,7 @@ docker images simple-web-db
 
 ## 3. Crear el Secret
 
-```powershell
-kubectl create secret generic db-secret --from-literal=password=example
-```
-
-```bash
+```sh
 kubectl create secret generic db-secret --from-literal=password=example
 ```
 
@@ -109,16 +94,7 @@ kubectl create secret generic db-secret --from-literal=password=example
 
 En este orden:
 
-```powershell
-kubectl apply -f db-pvc.yaml
-kubectl apply -f db-deployment.yaml
-kubectl apply -f db-service.yaml
-kubectl apply -f web-deployment.yaml
-kubectl apply -f web-service.yaml
-kubectl get pods -w
-```
-
-```bash
+```sh
 kubectl apply -f db-pvc.yaml
 kubectl apply -f db-deployment.yaml
 kubectl apply -f db-service.yaml
@@ -132,11 +108,7 @@ descarga de PostgreSQL tarda un par de minutos.
 
 ## 5. Abrir la aplicación
 
-```powershell
-minikube service web --url
-```
-
-```bash
+```sh
 minikube service web --url
 ```
 
@@ -145,12 +117,7 @@ minikube service web --url
 
 Alternativa, idéntica en todos los sistemas:
 
-```powershell
-kubectl port-forward service/web 8080:80
-# y luego abran http://127.0.0.1:8080
-```
-
-```bash
+```sh
 kubectl port-forward service/web 8080:80
 ```
 
@@ -171,7 +138,7 @@ réplicas. Eso es el Service balanceando.
 
 Comandos de diagnóstico, iguales en los dos shells:
 
-```powershell
+```sh
 kubectl get pods -o wide
 kubectl describe pod -l app=web
 kubectl logs deploy/web
@@ -180,22 +147,13 @@ kubectl logs deploy/db
 
 Y para probar el DNS interno desde dentro de un Pod web:
 
-```powershell
-kubectl exec deploy/web -- python -c "import socket; print(socket.gethostbyname('db'))"
-```
-
-```bash
+```sh
 kubectl exec deploy/web -- python -c "import socket; print(socket.gethostbyname('db'))"
 ```
 
 ## Probar la persistencia
 
-```powershell
-kubectl delete pod -l app=db
-kubectl get pods -w
-```
-
-```bash
+```sh
 kubectl delete pod -l app=db
 kubectl get pods -w
 ```
@@ -206,13 +164,7 @@ hecha. Se ve en `kubectl logs deploy/db` — aparece
 
 ## Limpieza
 
-```powershell
-kubectl delete -f web-service.yaml -f web-deployment.yaml -f db-service.yaml -f db-deployment.yaml --ignore-not-found
-kubectl delete -f db-pvc.yaml --ignore-not-found
-kubectl delete secret db-secret --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f web-service.yaml -f web-deployment.yaml -f db-service.yaml -f db-deployment.yaml --ignore-not-found
 kubectl delete -f db-pvc.yaml --ignore-not-found
 kubectl delete secret db-secret --ignore-not-found

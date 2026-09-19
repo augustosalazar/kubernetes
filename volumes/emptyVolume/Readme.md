@@ -14,22 +14,13 @@ Los dos montan **el mismo volumen** en `/data`.
 
 ## Inicio desde cero
 
-```powershell
-kubectl delete -f emptydir-deployment.yaml --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f emptydir-deployment.yaml --ignore-not-found
 ```
 
 ## Desplegar
 
-```powershell
-kubectl apply -f emptydir-deployment.yaml
-kubectl get pods
-```
-
-```bash
+```sh
 kubectl apply -f emptydir-deployment.yaml
 kubectl get pods
 ```
@@ -38,11 +29,7 @@ Debería aparecer **un** Pod con `READY 2/2`: un Pod, dos contenedores.
 
 ## Ver lo que hizo el reader sin entrar a nada
 
-```powershell
-kubectl logs deploy/emptydir-demo -c reader
-```
-
-```bash
+```sh
 kubectl logs deploy/emptydir-demo -c reader
 ```
 
@@ -50,11 +37,7 @@ Ahí ya se ve el contenido del archivo que escribió *el otro* contenedor.
 
 ## Entrar al contenedor reader
 
-```powershell
-kubectl exec -it deploy/emptydir-demo -c reader -- sh
-```
-
-```bash
+```sh
 kubectl exec -it deploy/emptydir-demo -c reader -- sh
 ```
 
@@ -89,14 +72,7 @@ La salida confirma dos cosas:
 
 Miren la fecha que guardó el writer, borren el Pod y vuelvan a mirar:
 
-```powershell
-kubectl exec deploy/emptydir-demo -c reader -- cat /data/file.txt
-kubectl delete pod -l app=emptydir-demo
-kubectl get pods -w        # esperen a que el nuevo esté 2/2
-kubectl exec deploy/emptydir-demo -c reader -- cat /data/file.txt
-```
-
-```bash
+```sh
 kubectl exec deploy/emptydir-demo -c reader -- cat /data/file.txt
 kubectl delete pod -l app=emptydir-demo
 kubectl get pods -w
@@ -117,10 +93,6 @@ esa misma prueba da el resultado contrario.
 
 ## Limpieza
 
-```powershell
-kubectl delete -f emptydir-deployment.yaml --ignore-not-found
-```
-
-```bash
+```sh
 kubectl delete -f emptydir-deployment.yaml --ignore-not-found
 ```
