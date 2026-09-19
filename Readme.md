@@ -20,9 +20,6 @@ rompen los ejercicios; están listadas más abajo.
 | [`jobs/`](jobs/) | Por qué existe `Job` si ya existe `Deployment` |
 | [`webDbScenario/`](webDbScenario/) | Aplicación web + PostgreSQL con Secret y PVC |
 
-Orden sugerido: `simpleNginx` → `scalingScenario` → `volumes` → `jobs` →
-`webDbScenario`.
-
 ---
 
 ## Requisitos

@@ -13,6 +13,18 @@ almacenamiento que **sobrevive al borrado del Pod**.
 
 ---
 
+## Inicio desde cero
+
+```powershell
+kubectl delete -f pvc-deployment.yaml --ignore-not-found
+kubectl delete -f pvc.yaml --ignore-not-found
+```
+
+```bash
+kubectl delete -f pvc-deployment.yaml --ignore-not-found
+kubectl delete -f pvc.yaml --ignore-not-found
+```
+
 ## Crear el PVC
 
 ```powershell
@@ -120,13 +132,13 @@ kubectl exec deploy/pvc-demo -- cat /data/arranques.txt
 ## Limpieza
 
 ```powershell
-kubectl delete -f pvc-deployment.yaml
-kubectl delete -f pvc.yaml
+kubectl delete -f pvc-deployment.yaml --ignore-not-found
+kubectl delete -f pvc.yaml --ignore-not-found
 ```
 
 ```bash
-kubectl delete -f pvc-deployment.yaml
-kubectl delete -f pvc.yaml
+kubectl delete -f pvc-deployment.yaml --ignore-not-found
+kubectl delete -f pvc.yaml --ignore-not-found
 ```
 
 El PVC hay que borrarlo aparte: **no** desaparece con el Deployment. Esa es

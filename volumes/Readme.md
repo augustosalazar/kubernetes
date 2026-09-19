@@ -4,7 +4,9 @@ Esta carpeta contiene **ejemplos de los principales tipos de volumen**, cada uno
 implementado con un **Deployment** y documentado en su propia subcarpeta.
 
 Este README de arriba da solo la **introducción conceptual**. Los comandos, los
-experimentos y las observaciones están dentro de cada carpeta.
+experimentos y las observaciones están dentro de cada carpeta. Cada subcarpeta
+incluye un bloque de inicio desde cero y su propia limpieza final; se pueden
+realizar de forma independiente.
 
 ---
 
@@ -97,12 +99,16 @@ con dos excepciones que sí importan:
 
 1. **`kubectl exec -it ... -- sh`** necesita una consola de verdad. Funciona en
    Windows Terminal, PowerShell y CMD; en PowerShell ISE se queda colgado.
-2. **Las comillas.** Si escriben `kubectl get secret db-secret -o jsonpath="{.data.password}"`
-   en PowerShell, la cadena entre comillas dobles se interpola antes de llegar a
-   kubectl. Usen **comillas simples**:
+2. **Las comillas.** Para que los ejemplos se comporten igual en PowerShell y
+   bash, los `jsonpath` se escriben entre **comillas simples**:
 
    ```powershell
    kubectl get secret db-secret -o jsonpath='{.data.password}'
    ```
 
 Cada README repite lo que le aplique en su sitio.
+
+## Limpieza
+
+Este README no crea recursos. Al terminar cualquier subcarpeta, ejecuten la
+sección **Limpieza** de ese ejercicio para eliminar sus recursos.

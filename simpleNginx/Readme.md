@@ -6,10 +6,32 @@ Deployment, Pods, Service — antes de complicar nada.
 
 ---
 
+## Inicio desde cero
+
+Ejecuten este bloque antes de empezar, incluso si ya hicieron el ejercicio. Solo
+elimina los recursos de **esta** carpeta y permite repetirlo sin depender del
+estado anterior.
+
+```powershell
+kubectl delete -f my-app-service.yaml --ignore-not-found
+kubectl delete -f my-app-deployment.yaml --ignore-not-found
+```
+
+```bash
+kubectl delete -f my-app-service.yaml --ignore-not-found
+kubectl delete -f my-app-deployment.yaml --ignore-not-found
+```
+
 ## Desplegar
 
 ```powershell
 kubectl apply -f my-app-deployment.yaml
+kubectl apply -f my-app-service.yaml
+```
+
+```bash
+kubectl apply -f my-app-deployment.yaml
+kubectl apply -f my-app-service.yaml
 ```
 
 Comprobar el estado del Deployment:
@@ -22,10 +44,13 @@ kubectl get pods -o wide
 Deberían ver **dos** Pods. Ese número lo decide `replicas: 2` en el manifiesto,
 no ustedes con un comando.
 
-## Exponer el servicio
+## Comprobar el Service
 
 ```powershell
-kubectl apply -f my-app-service.yaml
+kubectl get services
+```
+
+```bash
 kubectl get services
 ```
 
@@ -82,10 +107,11 @@ corriendo. Comparen esto con lo que hace un `Job` en la carpeta [`jobs/`](../job
 ## Limpieza
 
 ```powershell
-kubectl delete -f my-app-service.yaml
-kubectl delete -f my-app-deployment.yaml
+kubectl delete -f my-app-service.yaml --ignore-not-found
+kubectl delete -f my-app-deployment.yaml --ignore-not-found
 ```
 
-
-No es obligatorio borrarlo antes de pasar a `scalingScenario/` —aquel usa otros
-nombres, otra etiqueta y otro NodePort—, pero deja el clúster más limpio.
+```bash
+kubectl delete -f my-app-service.yaml --ignore-not-found
+kubectl delete -f my-app-deployment.yaml --ignore-not-found
+```

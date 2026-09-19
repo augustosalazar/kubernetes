@@ -5,6 +5,18 @@ de un volumen.
 
 ---
 
+## Inicio desde cero
+
+```powershell
+kubectl delete -f secret-deployment.yaml --ignore-not-found
+kubectl delete secret db-secret --ignore-not-found
+```
+
+```bash
+kubectl delete -f secret-deployment.yaml --ignore-not-found
+kubectl delete secret db-secret --ignore-not-found
+```
+
 ## Crear el Secret
 
 ```powershell
@@ -84,9 +96,9 @@ kubectl get secret db-secret -o jsonpath='{.data.password}' | ForEach-Object { [
 kubectl get secret db-secret -o jsonpath='{.data.password}' | base64 -d
 ```
 
-> **Usen comillas simples en el `jsonpath`.** Con comillas dobles, PowerShell
-> interpola el contenido de las llaves antes de que kubectl lo vea y el comando
-> devuelve algo distinto de lo que esperan.
+> **Usen comillas simples en el `jsonpath`** para que el comando sea idéntico en
+> PowerShell y bash. En esta expresión concreta las comillas dobles también
+> funcionan; las simples evitan problemas si más adelante se añade un `$`.
 >
 > PowerShell no trae `base64`; por eso arriba se usa `[Convert]::FromBase64String`.
 
@@ -98,16 +110,11 @@ lee en claro.
 ## Limpieza
 
 ```powershell
-kubectl delete -f secret-deployment.yaml
-kubectl delete secret db-secret
+kubectl delete -f secret-deployment.yaml --ignore-not-found
+kubectl delete secret db-secret --ignore-not-found
 ```
 
 ```bash
-kubectl delete -f secret-deployment.yaml
-kubectl delete secret db-secret
+kubectl delete -f secret-deployment.yaml --ignore-not-found
+kubectl delete secret db-secret --ignore-not-found
 ```
-
-> Si van a seguir con [`../../webDbScenario/`](../../webDbScenario/), fíjense en
-> que aquel también usa un Secret llamado `db-secret`, pero con **otra
-> contraseña**. Borren este antes, o el PostgreSQL de allá arrancará con la
-> contraseña equivocada.

@@ -5,6 +5,18 @@ un volumen.
 
 ---
 
+## Inicio desde cero
+
+```powershell
+kubectl delete -f configmap-deployment.yaml --ignore-not-found
+kubectl delete configmap app-config --ignore-not-found
+```
+
+```bash
+kubectl delete -f configmap-deployment.yaml --ignore-not-found
+kubectl delete configmap app-config --ignore-not-found
+```
+
 ## Crear el ConfigMap
 
 Un ConfigMap llamado `app-config` con una sola pareja clave–valor,
@@ -94,17 +106,17 @@ kubectl exec deploy/configmap-demo -- cat /config/APP_MODE
 ```
 
 El archivo montado se actualiza solo, sin recrear el Pod, aunque puede tardar
-hasta un minuto (kubelet lo sincroniza periódicamente). Lo que **no** cambia solo
+hasta unos dos minutos según la configuración del kubelet. Lo que **no** cambia solo
 es una variable de entorno cargada desde un ConfigMap: eso sí exige reiniciar el Pod.
 
 ## Limpieza
 
 ```powershell
-kubectl delete -f configmap-deployment.yaml
-kubectl delete configmap app-config
+kubectl delete -f configmap-deployment.yaml --ignore-not-found
+kubectl delete configmap app-config --ignore-not-found
 ```
 
 ```bash
-kubectl delete -f configmap-deployment.yaml
-kubectl delete configmap app-config
+kubectl delete -f configmap-deployment.yaml --ignore-not-found
+kubectl delete configmap app-config --ignore-not-found
 ```

@@ -12,6 +12,16 @@ Los dos montan **el mismo volumen** en `/data`.
 
 ---
 
+## Inicio desde cero
+
+```powershell
+kubectl delete -f emptydir-deployment.yaml --ignore-not-found
+```
+
+```bash
+kubectl delete -f emptydir-deployment.yaml --ignore-not-found
+```
+
 ## Desplegar
 
 ```powershell
@@ -108,9 +118,9 @@ esa misma prueba da el resultado contrario.
 ## Limpieza
 
 ```powershell
-kubectl delete -f emptydir-deployment.yaml
+kubectl delete -f emptydir-deployment.yaml --ignore-not-found
 ```
 
 ```bash
-kubectl delete -f emptydir-deployment.yaml
+kubectl delete -f emptydir-deployment.yaml --ignore-not-found
 ```

@@ -27,6 +27,17 @@ cambiar de máquina. Con uno solo, todo lo demás funciona igual.
 
 ## Preparación
 
+Para repetir el ejercicio desde cero, borren primero su namespace. `--wait=true`
+espera a que desaparezca antes de crearlo otra vez.
+
+```powershell
+kubectl delete namespace ejercicio --ignore-not-found --wait=true
+```
+
+```bash
+kubectl delete namespace ejercicio --ignore-not-found --wait=true
+```
+
 ```powershell
 cd jobs
 kubectl apply -f 01-namespace.yaml
@@ -227,10 +238,11 @@ kubectl apply  -f 02-job-que-termina.yaml
 Un Deployment sí se deja editar en caliente. Esa asimetría no es un capricho:
 es la misma diferencia de promesa que están investigando.
 
-**El Job desapareció solo.** Los cuatro manifiestos llevan
+**El Job desapareció solo.** Los tres manifiestos de Job llevan
 `ttlSecondsAfterFinished: 600`. Diez minutos después de terminar, el objeto y
 sus Pods se borran automáticamente. Si vuelven al rato y no encuentran nada, no
-se perdió: el TTL controller hizo su trabajo.
+se perdió: el TTL controller hizo su trabajo. El manifiesto de Deployment se
+borra manualmente en el experimento 4.
 
 ## Notas para Windows y PowerShell
 
@@ -251,11 +263,11 @@ se perdió: el TTL controller hizo su trabajo.
 ## Limpieza
 
 ```powershell
-kubectl delete namespace ejercicio
+kubectl delete namespace ejercicio --ignore-not-found --wait=true
 ```
 
 ```bash
-kubectl delete namespace ejercicio
+kubectl delete namespace ejercicio --ignore-not-found --wait=true
 ```
 
 Un solo comando borra todo lo que crearon aquí. Puede tardar unos segundos.

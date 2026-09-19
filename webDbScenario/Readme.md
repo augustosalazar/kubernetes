@@ -1,8 +1,7 @@
 # Aplicación web + base de datos
 
 El escenario completo: una web con dos réplicas que se conecta a un PostgreSQL
-con contraseña en un `Secret` y datos en un `PVC`. Junta todo lo de las carpetas
-anteriores.
+con contraseña en un `Secret` y datos en un `PVC`.
 
 ## Modelo mental
 
@@ -30,6 +29,23 @@ anteriores.
 ```
 
 ---
+
+## Inicio desde cero
+
+Ejecuten esta limpieza antes de empezar. Borra únicamente los recursos de este
+escenario, incluido el PVC, para que PostgreSQL se inicialice de nuevo.
+
+```powershell
+kubectl delete -f web-service.yaml -f web-deployment.yaml -f db-service.yaml -f db-deployment.yaml --ignore-not-found
+kubectl delete -f db-pvc.yaml --ignore-not-found
+kubectl delete secret db-secret --ignore-not-found
+```
+
+```bash
+kubectl delete -f web-service.yaml -f web-deployment.yaml -f db-service.yaml -f db-deployment.yaml --ignore-not-found
+kubectl delete -f db-pvc.yaml --ignore-not-found
+kubectl delete secret db-secret --ignore-not-found
+```
 
 ## 1. Apuntar Docker al demonio de minikube
 
@@ -88,11 +104,6 @@ kubectl create secret generic db-secret --from-literal=password=example
 ```bash
 kubectl create secret generic db-secret --from-literal=password=example
 ```
-
-> Si hicieron el ejercicio de [`../volumes/secret/`](../volumes/secret/), ahí se
-> crea un Secret **con el mismo nombre** y otra contraseña. Bórrenlo primero
-> (`kubectl delete secret db-secret`), o PostgreSQL arrancará con la contraseña
-> equivocada y la web dirá que falló la autenticación.
 
 ## 4. Desplegar
 
@@ -196,15 +207,15 @@ hecha. Se ve en `kubectl logs deploy/db` — aparece
 ## Limpieza
 
 ```powershell
-kubectl delete -f web-service.yaml -f web-deployment.yaml -f db-service.yaml -f db-deployment.yaml
-kubectl delete -f db-pvc.yaml
-kubectl delete secret db-secret
+kubectl delete -f web-service.yaml -f web-deployment.yaml -f db-service.yaml -f db-deployment.yaml --ignore-not-found
+kubectl delete -f db-pvc.yaml --ignore-not-found
+kubectl delete secret db-secret --ignore-not-found
 ```
 
 ```bash
-kubectl delete -f web-service.yaml -f web-deployment.yaml -f db-service.yaml -f db-deployment.yaml
-kubectl delete -f db-pvc.yaml
-kubectl delete secret db-secret
+kubectl delete -f web-service.yaml -f web-deployment.yaml -f db-service.yaml -f db-deployment.yaml --ignore-not-found
+kubectl delete -f db-pvc.yaml --ignore-not-found
+kubectl delete secret db-secret --ignore-not-found
 ```
 
 El PVC hay que borrarlo aparte, a propósito: si no, los datos siguen ahí.
